@@ -15,21 +15,13 @@ class MainActivity : AppCompatActivity() {
 
 
     private val mOnNavigationItemSelectedListener = BottomNavigationView.OnNavigationItemSelectedListener { item ->
-        when (item.itemId) {
-            R.id.navigation_home -> {
 
-                return@OnNavigationItemSelectedListener true
-            }
-            R.id.navigation_dashboard -> {
+        mfManager.switchTab(getTabIndex(item.itemId))
+        return@OnNavigationItemSelectedListener true
+    }
 
-                return@OnNavigationItemSelectedListener true
-            }
-            R.id.navigation_notifications -> {
-
-                return@OnNavigationItemSelectedListener true
-            }
-        }
-        false
+    private val mOnNavigationItemReselectedListener = BottomNavigationView.OnNavigationItemReselectedListener { item ->
+        mfManager.reSwitchTab(getTabIndex(item.itemId))
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,6 +32,7 @@ class MainActivity : AppCompatActivity() {
         mfManager.initialize(defaultSelectedIndex = 0, numberOfTabs = 3, savedInstanceState = null)
 
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener)
+        navigation.setOnNavigationItemReselectedListener(mOnNavigationItemReselectedListener)
     }
 
 

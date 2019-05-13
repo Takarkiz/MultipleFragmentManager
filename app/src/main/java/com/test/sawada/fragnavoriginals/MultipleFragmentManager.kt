@@ -159,7 +159,7 @@ class MultipleFragmentManager constructor(
     }
 
     fun switchTab(index: Int) {
-        if (index >= fragmentStacksTags.size) {
+        if (index >= fragmentStacksTags.size || index == -1) {
             return
         }
 
@@ -182,7 +182,11 @@ class MultipleFragmentManager constructor(
         }
 
         if (currentStackIndex == index) {
-            fragmentStacksTags[index].clear()
+            val fragmentStacksTag = fragmentStacksTags[index]
+
+            while (fragmentStacksTag.size > 1) {
+                fragmentStacksTag.pop()
+            }
         }
 
     }
