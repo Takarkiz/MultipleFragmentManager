@@ -1,11 +1,15 @@
 package com.test.sawada.fragnavoriginals
 
 
+import android.graphics.Bitmap
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.webkit.WebResourceRequest
 import android.webkit.WebView
+import android.webkit.WebViewClient
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 
 
@@ -39,11 +43,30 @@ class WebFragment : Fragment() {
         val rootView = inflater.inflate(R.layout.fragment_web, container, false)
         webView = rootView.findViewById(R.id.webView)
         param1?.let {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+            //webView.webViewClient = myWebViewClient()
             webView.loadUrl(it)
         }
 
         // Inflate the layout for this fragment
         return rootView
+    }
+
+    private fun myWebViewClient(): WebViewClient {
+        return object : WebViewClient() {
+
+            override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
+                val url = request.url.toString()
+
+                return true
+            }
+
+            override fun onPageStarted(view: WebView, url: String, favicon: Bitmap) {}
+
+            override fun onPageFinished(view: WebView, url: String) {
+
+            }
+        }
     }
 
 
@@ -53,12 +76,11 @@ class WebFragment : Fragment() {
          * this fragment using the provided parameters.
          *
          * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
          * @return A new instance of fragment WebFragment.
          */
         // TODO: Rename and change types and number of parameters
         @JvmStatic
-        fun newInstance(param1: String, param2: String) =
+        fun newInstance(param1: String) =
             WebFragment().apply {
                 arguments = Bundle().apply {
                     putString(ARG_PARAM1, param1)

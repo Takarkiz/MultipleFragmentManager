@@ -10,16 +10,20 @@ import java.lang.ref.WeakReference
 import java.util.*
 import kotlin.collections.ArrayList
 
-class MultipleFragmentManager constructor(private val fragmentManager: FragmentManager, @IdRes private val containerId: Int) {
+class MultipleFragmentManager constructor(
+    private val fragmentManager: FragmentManager, @IdRes private val containerId: Int,
+    private val rootUrlList: List<String>
+) {
 
-    var rootFragments: List<Fragment>? = null
+    var rootFragments: List<WebFragment>? = null
         set(value) {
-            if (value != null) {
+            if (value == null) {
                 return
             }
             field = value
         }
-    var rootFragmentListener: RootFragmentListener? = null
+
+//    var rootFragmentListener: RootFragmentListener? = null
 
     private var currentStackIndex: Int = 0
 
@@ -27,7 +31,7 @@ class MultipleFragmentManager constructor(private val fragmentManager: FragmentM
     private var tagCount: Int = 0
     private var mCurrentFrag: Fragment? = null
 
-    private val fragmentCache = mutableMapOf<String, WeakReference<Fragment>>()
+    private val fragmentCache = mutableMapOf<String, WeakReference<WebFragment>>()
 
     val currentFragment: Fragment?
         get() {
@@ -57,54 +61,56 @@ class MultipleFragmentManager constructor(private val fragmentManager: FragmentM
         @CheckResult
         get() = fragmentStacksTags.getOrNull(currentStackIndex)?.size == 1
 
-
+    /**
+     * それぞれのタブにルートフラグメントを対応させるなどの初期化作業
+     *
+     * @param defaultSelectedIndex  最初に選択されているタブのインデックス
+     * @param numberOfTabs  タブの総数
+     * @param savedInstanceState 保存済みのインスタンス
+     */
     fun initialize(defaultSelectedIndex: Int = 0, numberOfTabs: Int = 5, savedInstanceState: Bundle? = null) {
-        if (rootFragments == null) {
-            return
-        }
 
+        rootFragments = createRootFragment()
 
+        // 初期起動時
         if (savedInstanceState == null) {
             fragmentStacksTags.clear()
             for (i in 0 until numberOfTabs) {
                 fragmentStacksTags.add(Stack())
             }
 
-            currentStackIndex = defaultSelectedIndex
             clearFragmentManager()
 
-
-            val ft = fragmentManager.beginTransaction()
+            val transaction = fragmentManager.beginTransaction()
 
             for (i in 0 until numberOfTabs) {
                 currentStackIndex = i
                 val fragment = getRootFragment(i)
                 val fragmentTag = generateTag(fragment)
                 fragmentStacksTags[currentStackIndex].push(fragmentTag)
-                ft.addSafe(containerId, fragment, fragmentTag)
+                transaction.addSafe(containerId, fragment, fragmentTag)
                 if (i == defaultSelectedIndex) {
                     mCurrentFrag = fragment
-
                 }
             }
             currentStackIndex = defaultSelectedIndex
 
             // 最初のフラグメントを貼る
             mCurrentFrag?.let {
-                ft.replace(containerId, it)
-                ft.commit()
+                transaction.replace(containerId, it)
+                transaction.commit()
             }
         }
     }
 
 
     @CheckResult
-    private fun getRootFragment(index: Int): Fragment {
-        var fragment: Fragment? = null
+    private fun getRootFragment(index: Int): WebFragment {
+        var fragment: WebFragment? = null
 
-        if (fragment == null) {
-            fragment = rootFragmentListener?.getRootFragment(index)
-        }
+//        if (fragment == null) {
+//            fragment = rootFragmentListener?.getRootFragment(index)
+//        }
 
         if (fragment == null) {
             fragment = rootFragments?.getOrNull(index)
@@ -120,7 +126,7 @@ class MultipleFragmentManager constructor(private val fragmentManager: FragmentM
     /**
      * フラグメントを Add 時にキャッシュにそのフラグメントを追加する．
      */
-    private fun FragmentTransaction.addSafe(containerViewId: Int, fragment: Fragment, tag: String) {
+    private fun FragmentTransaction.addSafe(containerViewId: Int, fragment: WebFragment, tag: String) {
         fragmentCache[tag] = WeakReference(fragment)
         add(containerViewId, fragment, tag)
     }
@@ -138,7 +144,7 @@ class MultipleFragmentManager constructor(private val fragmentManager: FragmentM
     }
 
     @CheckResult
-    private fun generateTag(fragment: Fragment): String {
+    private fun generateTag(fragment: WebFragment): String {
         return fragment.javaClass.name + ++tagCount
     }
 
@@ -175,7 +181,21 @@ class MultipleFragmentManager constructor(private val fragmentManager: FragmentM
             return
         }
 
-        if ()
+        if (currentStackIndex == index) {
+            fragmentStacksTags[index].clear()
+        }
+
+    }
+
+    private fun createRootFragment(): List<WebFragment> {
+        val fragments: MutableList<WebFragment> = mutableListOf()
+
+        for (url in rootUrlList) {
+            val webFragment = WebFragment.newInstance(url)
+            fragments.add(webFragment)
+        }
+
+        return fragments.toList()
     }
 
     private fun getFragment(tag: String): Fragment? {
@@ -204,9 +224,9 @@ class MultipleFragmentManager constructor(private val fragmentManager: FragmentM
         return fragmentStacksTags[index].mapNotNullTo(Stack()) { s -> getFragment(s) }
     }
 
-    interface RootFragmentListener {
-        val numberOfRootFragments: Int
-
-        fun getRootFragment(index: Int): Fragment
-    }
+//    interface RootFragmentListener {
+//        val numberOfRootFragments: Int
+//
+//        fun getRootFragment(index: Int): Fragment
+//    }
 }
