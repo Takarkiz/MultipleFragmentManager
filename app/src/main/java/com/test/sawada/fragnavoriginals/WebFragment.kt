@@ -47,7 +47,7 @@ class WebFragment : Fragment() {
             webView = rootsView.findViewById(R.id.webView)
             param1?.let {
                 Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
-                //webView.webViewClient = myWebViewClient()
+                webView.webViewClient = myWebViewClient()
                 webView.loadUrl(it)
             }
 
@@ -62,16 +62,10 @@ class WebFragment : Fragment() {
         return object : WebViewClient() {
 
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
-                val url = request.url.toString()
-
+                // 全て止める
                 return true
             }
 
-            override fun onPageStarted(view: WebView, url: String, favicon: Bitmap) {}
-
-            override fun onPageFinished(view: WebView, url: String) {
-
-            }
         }
     }
 

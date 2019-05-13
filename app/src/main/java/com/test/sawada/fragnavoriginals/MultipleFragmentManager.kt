@@ -188,6 +188,9 @@ class MultipleFragmentManager constructor(
                 fragmentStacksTag.pop()
             }
         }
+    }
+
+    fun addFragment(url: String) {
 
     }
 
