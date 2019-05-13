@@ -27,6 +27,7 @@ class WebFragment : Fragment() {
     // TODO: Rename and change types of parameters
     private var param1: String? = null
     lateinit var webView: WebView
+    private var rootView: View? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,12 +41,17 @@ class WebFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
 
-        val rootView = inflater.inflate(R.layout.fragment_web, container, false)
-        webView = rootView.findViewById(R.id.webView)
-        param1?.let {
-            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
-            //webView.webViewClient = myWebViewClient()
-            webView.loadUrl(it)
+        if (rootView == null) {
+
+            val rootsView = inflater.inflate(R.layout.fragment_web, container, false)
+            webView = rootsView.findViewById(R.id.webView)
+            param1?.let {
+                Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+                //webView.webViewClient = myWebViewClient()
+                webView.loadUrl(it)
+            }
+
+            rootView = rootsView
         }
 
         // Inflate the layout for this fragment
