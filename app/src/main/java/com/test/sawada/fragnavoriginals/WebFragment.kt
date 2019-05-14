@@ -1,7 +1,6 @@
 package com.test.sawada.fragnavoriginals
 
 
-import android.graphics.Bitmap
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -33,6 +32,7 @@ class WebFragment : Fragment() {
         super.onCreate(savedInstanceState)
         arguments?.let {
             param1 = it.getString(ARG_PARAM1)
+
         }
     }
 
@@ -62,6 +62,10 @@ class WebFragment : Fragment() {
         return object : WebViewClient() {
 
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
+
+                val mainActivity = activity as MainActivity
+                mainActivity.loadNewFragment(listOf(request.url.toString()))
+
                 // 全て止める
                 return true
             }

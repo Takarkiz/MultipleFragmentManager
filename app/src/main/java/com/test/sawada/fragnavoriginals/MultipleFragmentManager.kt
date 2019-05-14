@@ -23,8 +23,6 @@ class MultipleFragmentManager constructor(
             field = value
         }
 
-//    var rootFragmentListener: RootFragmentListener? = null
-
     private var currentStackIndex: Int = 0
 
     private val fragmentStacksTags: MutableList<Stack<String>> = ArrayList()
@@ -70,8 +68,6 @@ class MultipleFragmentManager constructor(
      */
     fun initialize(defaultSelectedIndex: Int = 0, numberOfTabs: Int = 5, savedInstanceState: Bundle? = null) {
 
-        rootFragments = createRootFragment()
-
         // 初期起動時
         if (savedInstanceState == null) {
             fragmentStacksTags.clear()
@@ -97,7 +93,7 @@ class MultipleFragmentManager constructor(
 
             // 最初のフラグメントを貼る
             mCurrentFrag?.let {
-                transaction.replace(containerId, it)
+                transaction.replace(containerId, mCurrentFrag as WebFragment)
                 transaction.commit()
             }
         }
@@ -167,7 +163,6 @@ class MultipleFragmentManager constructor(
             val ft = fragmentManager.beginTransaction()
             currentStackIndex = index
 
-
             val tagStack = fragmentStacksTags[currentStackIndex]
             mCurrentFrag = getFragment(tagStack.peek())?.also {
                 ft.replace(containerId, it)
@@ -190,20 +185,15 @@ class MultipleFragmentManager constructor(
         }
     }
 
-    fun addFragment(url: String) {
+    fun insertFragment(fragment: WebFragment) {
+
+        val transaction = fragmentManager.beginTransaction()
+        val fragmentTag = generateTag(fragment)
+        transaction.addSafe(containerId, fragment, fragmentTag)
+        transaction.commit()
 
     }
 
-    private fun createRootFragment(): List<WebFragment> {
-        val fragments: MutableList<WebFragment> = mutableListOf()
-
-        for (url in rootUrlList) {
-            val webFragment = WebFragment.newInstance(url)
-            fragments.add(webFragment)
-        }
-
-        return fragments.toList()
-    }
 
     private fun getFragment(tag: String): Fragment? {
         val weakReference = fragmentCache[tag]
@@ -230,10 +220,4 @@ class MultipleFragmentManager constructor(
 
         return fragmentStacksTags[index].mapNotNullTo(Stack()) { s -> getFragment(s) }
     }
-
-//    interface RootFragmentListener {
-//        val numberOfRootFragments: Int
-//
-//        fun getRootFragment(index: Int): Fragment
-//    }
 }
